@@ -109,5 +109,3 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         root = sys.argv[1]
     unpack(root)
-
-# aws s3 cp --recursive AWSDynamoDB/parsed/ s3://groengegeven-swa-v2-export/parsed/ 

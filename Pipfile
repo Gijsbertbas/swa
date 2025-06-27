@@ -13,6 +13,12 @@ dash = "<3.0"
 sqlalchemy = "*"
 python-dotenv = "*"
 psycopg2-binary = "*"
+tqdm = "*"
+ipywidgets = "*"
+scikit-learn = "*"
+seeborn = "*"
+seaborn = "*"
+pydantic-settings = "*"
 
 [dev-packages]
 
