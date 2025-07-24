@@ -10,9 +10,9 @@ class Extractor:
         self.client = client
         self.path = path
 
-    def get_daily_usage_data_since_date(self, date: date):
+    def get_daily_usage_data_since_date(self, report_date: date):
         """Extract daily usage data from Supabase since a specific date up until yesterday.
-        Storing as multiline JSON files in the unpacked/supabase_daily_usage directory.
+        Storing as multiline JSON files in the self.path/supabase_daily_usage directory.
         """
         output_path = os.path.join(self.path, 'daily_usage_data')
         os.makedirs(output_path, exist_ok=True)
@@ -39,9 +39,10 @@ class Extractor:
         households.loc[households['house_number'].isna() | households['house_number'].isin([float('inf'), float('-inf')]), 'house_number'] = -1
         households['house_number'] = households['house_number'].astype('int')
 
-        households['address'] = f"{households['zipcode']}#{households['house_number'].astype(str)}"
-        alle_adressen['address'] = f"{alle_adressen['Postcode']}#{alle_adressen['Huisnummer'].astype(str)}"
+        households['address'] = households['zipcode'].astype(str) + '#' + households['house_number'].astype(str)
+        alle_adressen['address'] = alle_adressen['Postcode'].astype(str) + '#' + alle_adressen['Huisnummer'].astype(str)
         alle_adressen.drop_duplicates(subset='address', inplace=True)
+        breakpoint()
         households = households.merge(alle_adressen[['address', 'lon', 'lat']], on='address', how='left').drop(columns='address')
 
         households['date_of_activation'] = households['date_of_activation'].dt.date.astype(str)

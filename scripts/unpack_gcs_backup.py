@@ -1,7 +1,9 @@
+from datetime import datetime
 import json
 from pathlib import Path
 import sys
 from tqdm import tqdm
+from uuid import UUID
 
 TABLES = [
     # 'admin_dashboard_configurations',
@@ -53,6 +55,15 @@ TABLES = [
     # 'your_excel_table_name'
 ]
 
+
+def is_valid_uuid(uuid_to_test):
+    try:
+        uuid_obj = UUID(uuid_to_test)
+    except ValueError:
+        return False
+    return str(uuid_obj) == uuid_to_test
+
+
 def transform(record: dict, out_path: str):
     if 'daily_usage_data' in out_path:
         return {
@@ -61,6 +72,28 @@ def transform(record: dict, out_path: str):
             'date': record['date'],
             'type': record['type'],
             'usage': record['usage'],
+        }
+    elif 'p4_hour_data' in out_path:
+        if 'datetime' not in record:
+            print(f'Incorrect data format for {out_path}, missing datetime field')
+            return None
+        
+        local_time = datetime.fromisoformat(record['datetime'])
+        houseid = record['houseID']
+        if not is_valid_uuid(houseid):
+            record['house_id'] = houseid
+        else:
+            record['household_id'] = houseid
+
+        return {
+            'household_id': record.get('household_id'),
+            'house_id': record.get('house_id'),
+            'datetime': record['datetime'],
+            'date': local_time.date().isoformat(),
+            'time': local_time.time().isoformat(),
+            'backfeed': record['backfeedMeasurement']['meter'] if 'backfeedMeasurement' in record else None,
+            'electricity': record['electricityMeasurement']['meter'] if 'electricityMeasurement' in record else None,
+            'gas': record['gasMeasurement']['meter'] if 'gasMeasurement' in record else None,
         }
     else:
         print(f'Uknown record: {out_path}')
@@ -74,11 +107,12 @@ def parse(file_name: str, out_path: str):
     output_file = output_path / file_name.name
 
     records = json.load(open(file_name, 'r'))
-    if records:  # and 'requestDatetime' in records[0]: 
+    if records:
         with open(output_file, 'w') as f:
             for record in records:
                 record = transform(record, out_path)
-                f.write(json.dumps(record) + '\n')
+                if record:
+                    f.write(json.dumps(record) + '\n')
     else:
         # not a backup file
         return
