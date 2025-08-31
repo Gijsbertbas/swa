@@ -19,8 +19,12 @@ scikit-learn = "*"
 seeborn = "*"
 seaborn = "*"
 pydantic-settings = "*"
+folium = "*"
+branca = "*"
 
 [dev-packages]
+pytest = "*"
+ruff = "*"
 
 [requires]
 python_version = "3.13"

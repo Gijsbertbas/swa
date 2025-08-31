@@ -9,14 +9,17 @@ import numpy as np
 from tqdm import tqdm
 
 
-
 def get_household_data():
-    households = pd.read_csv('../data/spa_households.csv', sep=';')
-    households.rename(columns={'activation_code': 'activationkey'}, inplace=True)
-    households['date_of_activation'] = pd.to_datetime(households['date_of_activation'], format='ISO8601', utc=False).dt.tz_localize(None)
+    households = pd.read_csv("../data/spa_households.csv", sep=";")
+    households.rename(columns={"activation_code": "activationkey"}, inplace=True)
+    households["date_of_activation"] = pd.to_datetime(
+        households["date_of_activation"], format="ISO8601", utc=False
+    ).dt.tz_localize(None)
 
-    households = households[~pd.isna(households['gas_or_induction'])]
-    households['gas_or_induction'] = households['gas_or_induction'].replace({'Inductie': 'Induction'})
+    households = households[~pd.isna(households["gas_or_induction"])]
+    households["gas_or_induction"] = households["gas_or_induction"].replace(
+        {"Inductie": "Induction"}
+    )
     return households
 
 
@@ -38,19 +41,21 @@ def get_hour_data_for_keys(keys: tuple, session):
         workgroup="primary",
         boto3_session=session,
     )
-    df['datetime'] = pd.to_datetime(df['datetime'], format='ISO8601', utc=False).dt.tz_localize(None)
-    df = df[df['datetime'].dt.time.between(time(17), time(19), inclusive='both')]
+    df["datetime"] = pd.to_datetime(
+        df["datetime"], format="ISO8601", utc=False
+    ).dt.tz_localize(None)
+    df = df[df["datetime"].dt.time.between(time(17), time(19), inclusive="both")]
     return df
 
 
 def process_hour_data(df):
     def read_meter(row: pd.Series) -> pd.Series:
-        if not pd.isna(row['gasmeasurement']):
-            row['gas'] = row['gasmeasurement']['meter']
-        if not pd.isna(row['electricitymeasurement']):
-            row['elec'] = row['electricitymeasurement']['meter']
+        if not pd.isna(row["gasmeasurement"]):
+            row["gas"] = row["gasmeasurement"]["meter"]
+        if not pd.isna(row["electricitymeasurement"]):
+            row["elec"] = row["electricitymeasurement"]["meter"]
         return row
 
     df = df.progress_apply(read_meter, axis=1)
-    df = df[['activationkey', 'datetime', 'gas', 'elec']]
+    df = df[["activationkey", "datetime", "gas", "elec"]]
     return df

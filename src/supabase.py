@@ -28,7 +28,7 @@ class SupabaseClient:
             ph.id, ph.activation_code, ph.account_status, ph.client_id, c.title as client_title, cg.name as client_group, 
             ph.date_of_activation, ph.gas_ean, ph.electricity_ean, 
             phd.build_year, phd.square_meters, phd.house_type, phd.heating_type, phd.gas_connection, 
-            phd.gas_or_induction, phd.water_heating_type, 
+            phd.gas_or_induction, phd.water_heating_type,
             hd.zipcode, hd.house_number, hd.house_number_addition, hd.housing_corporation
         FROM public.households ph 
         LEFT JOIN public.clients c ON c.id = ph.client_id

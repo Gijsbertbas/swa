@@ -3,10 +3,10 @@
 ## Unpacking AWS DynamoDB backup data
 See scripts/unpack_dynamodb_backup.py.
 
-Used to upack DynamoDB backup files in the SWA bucket. The script was executed on an EC2 instance (t3.large) with enough storage to unpack the backup files (±120 Gb).
+Used to upack DynamoDB backup files in the SWA bucket. The script was executed on an EC2 instance (t3.large) with enough storage to unpack the backup files (±1 Tb).
 * copied all files to the EC2 instance
 * ran the script
-* copied the unpacked files to the final destination
+* copied the parsed files to the final destination
 
 ## Unpack Google Cloud Storage backup data
 See scripts/unpack_gcs_backup.py.
