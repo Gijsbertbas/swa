@@ -21,6 +21,7 @@ seaborn = "*"
 pydantic-settings = "*"
 folium = "*"
 branca = "*"
+typer = "*"
 
 [dev-packages]
 pytest = "*"

@@ -1,5 +1,5 @@
 from datetime import date
-from src.extract import HouseholdDataExtractor, DailyUsageDataExtractor
+from extract.supabase import HouseholdDataExtractor, DailyUsageDataExtractor
 from settings import SupabaseSettings
 from src.supabase import SupabaseClient
 import argparse
@@ -29,4 +29,4 @@ if __name__ == "__main__":
     elif args.extractor == "daily_usage":
         extractor = DailyUsageDataExtractor(client, path="extracted")
         since_date = args.since_date or date.today()
-        extractor.get_daily_usage_data_since_date(since_date)
+        extractor.extract(since_date)

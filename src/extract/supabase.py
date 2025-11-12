@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from src.utils import categorise_build_years, categorise_square_meters
 
 
-class Extractor:
+class SupabaseExtractor:
     def __init__(self, client: SupabaseClient, path: str = "extracted"):
         self.client = client
         self.path = path
@@ -16,10 +16,10 @@ class Extractor:
         raise NotImplementedError
 
 
-class DailyUsageDataExtractor(Extractor):
+class DailyUsageDataExtractor(SupabaseExtractor):
     def extract(self, report_date: date):
         """Extract daily usage data from Supabase since a specific date up until yesterday.
-        Storing as multiline JSON files in the self.path/supabase_daily_usage directory.
+        Storing as multiline JSON files in the self.path/daily_usage directory.
         """
         output_path = os.path.join(self.path, "daily_usage_data")
         os.makedirs(output_path, exist_ok=True)
@@ -40,7 +40,7 @@ class DailyUsageDataExtractor(Extractor):
             report_date += timedelta(days=1)
 
 
-class HouseholdDataExtractor(Extractor):
+class HouseholdDataExtractor(SupabaseExtractor):
     def extract(self):
         """Extract household data from Supabase and store it in a JSON file."""
         output_path = os.path.join(self.path, "supabase_households")

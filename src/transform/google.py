@@ -1,39 +1,9 @@
-import json
-from pathlib import Path
 from datetime import datetime
-from uuid import UUID
 
-
-class Transformer:
-    filename_prefix: str = ""
-
-    def __init__(self, root_path: str = "extracted"):
-        self.output_path = Path(root_path) / self.filename_prefix
-        self.output_path.mkdir(parents=True, exist_ok=True)
-
-    @classmethod
-    def applies(cls, filename: str) -> bool:
-        return filename.startswith(cls.filename_prefix)
-
-    def transform(self, filename: str) -> list[dict]:
-        records = json.load(open(filename, "r"))
-        return [self._transform(record) for record in records]
-
-    @staticmethod
-    def _transform(record: dict) -> dict:
-        raise NotImplementedError
-
-    @staticmethod
-    def is_valid_uuid(uuid_to_test):
-        try:
-            uuid_obj = UUID(uuid_to_test)
-        except ValueError:
-            return False
-        return str(uuid_obj) == uuid_to_test
+from transform.base import Transformer
 
 
 class P4HourData2025Transformer(Transformer):
-    filename_prefix: str = "p4_hour_data_2025"
 
     @staticmethod
     def _transform(record: dict) -> dict:
@@ -45,7 +15,6 @@ class P4HourData2025Transformer(Transformer):
 
 
 class P4QuarterData2024Transformer(Transformer):
-    filename_prefix: str = "p4_hour_data_2024"
 
     @staticmethod
     def _transform(record: dict) -> dict:
@@ -79,7 +48,6 @@ class P4QuarterData2024Transformer(Transformer):
 
 
 class P4QuarterData2025Transformer(Transformer):
-    filename_prefix: str = "p4_hour_data__migration_2025"
 
     @staticmethod
     def _transform(record: dict) -> dict:
@@ -109,7 +77,6 @@ class P4QuarterData2025Transformer(Transformer):
 
 
 class DailyUsageDataTransformer(Transformer):
-    filename_prefix: str = "daily_usage_data"
 
     @staticmethod
     def _transform(record: dict) -> dict:
