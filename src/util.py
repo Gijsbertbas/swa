@@ -10,15 +10,17 @@ class DataType(Enum):
     P4_HOUR_2025 = "p4_hour_2025"
     P4_QUARTER_2025 = "p4_quarter_2025"
     P4_QUARTER_2024 = "p4_quarter_2024"
+    HOUSEHOLD_EXCEPTIONS = "household_exceptions"
 
 
 @dataclass
 class ETLConfig:
     type: DataType
-    filename_prefix: str
-    transformer: Any
+    filename_prefix: str | None
+    transformer: Any | None = None
     root_extraction_folder: PosixPath = Path("extracted")
     root_transformation_folder: PosixPath = Path("transformed")
+    eligible_steps: str = "ETL"
 
     @property
     def s3_folder(self) -> str:

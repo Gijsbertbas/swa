@@ -4,3 +4,4 @@ extracted/*
 */__pycache__/*
 .env
 *.crt
+*/.ipynb_checkpoints/*

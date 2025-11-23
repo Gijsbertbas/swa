@@ -1,5 +1,4 @@
 import json
-from pathlib import PosixPath
 from uuid import UUID
 
 from tqdm import tqdm
@@ -36,8 +35,7 @@ class Transformer:
             for record in records:
                 f.write(json.dumps(record) + '\n')
 
-    @staticmethod
-    def _transform(record: dict) -> dict:
+    def _transform(self, record: dict) -> dict:
         raise NotImplementedError
 
     @staticmethod
