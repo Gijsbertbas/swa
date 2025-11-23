@@ -1,0 +1,7 @@
+transformed/*
+extracted/*
+.DS_Store
+*/__pycache__/*
+.env
+*.crt
+*/.ipynb_checkpoints/*

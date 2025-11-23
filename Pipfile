@@ -1,0 +1,31 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+boto3 = "*"
+notebook = "*"
+pandas = "*"
+awswrangler = "*"
+dtale = "*"
+dash = "<3.0"
+sqlalchemy = "*"
+python-dotenv = "*"
+psycopg2-binary = "*"
+tqdm = "*"
+ipywidgets = "*"
+scikit-learn = "*"
+seeborn = "*"
+seaborn = "*"
+pydantic-settings = "*"
+folium = "*"
+branca = "*"
+typer = "*"
+
+[dev-packages]
+pytest = "*"
+ruff = "*"
+
+[requires]
+python_version = "3.13"
