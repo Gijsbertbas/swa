@@ -8,7 +8,7 @@ Used to upack DynamoDB backup files in the SWA bucket. The script was executed o
 * ran the script
 * copied the parsed files to the final destination
 
-## Unpack Google Cloud Storage backup data
+## Unpack Google Cloud Storage backup data [OUTDATED]
 See scripts/unpack_gcs_backup.py.
 
 Using Rclone to perform the sync. The Rclone config uses env variable for the AWS authentication and a token obtained via the browser for the Google Cloud authentication. To use this token on the EC2 instance, the token was copied there. 
@@ -33,3 +33,6 @@ These steps are taken (and may be repeated) to extract data to the AWS account f
   * from Google Cloud: follow above unpacking flow to download and parse all cold storage files
   * extract from Supabase using `python scripts/run_extraction.py`
   * copy to S3 `rclone copy extracted/daily_usage_data/ s3:slimwonen-analysis-data/gcs/daily_usage/ --progress`
+
+## Run quarter analysis
+Kartaalanalyses may be run following the notebook `notebooks/kwartaal_midden_drenthe.ipynb`. This makes use of some helper classes (see [analysis/](./analysis/)) to collect, analyse and plot the data. The data is obtained from AWS Athena.
