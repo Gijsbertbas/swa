@@ -1,5 +1,5 @@
 from datetime import date
-from extract.supabase import HouseholdDataExtractor, DailyUsageDataExtractor
+from src.extract.supabase import HouseholdDataExtractor, DailyUsageDataExtractor
 from settings import SupabaseSettings
 from src.supabase import SupabaseClient
 import argparse
