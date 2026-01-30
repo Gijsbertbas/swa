@@ -127,7 +127,7 @@ class HouseholdPlots:
     def __init__(self, hh: Households) -> None:
         self.hh = hh
 
-    def plot_active_accounts(self, start_date: str, end_date: str):
+    def plot_active_accounts(self):
         """
         Plot the cumulative number of active accounts over time.
         
@@ -148,12 +148,8 @@ class HouseholdPlots:
         --------
         fig, ax : matplotlib figure and axis objects
         """
-        # Convert start and end dates to datetime
-        start_date = pd.to_datetime(start_date)
-        end_date = pd.to_datetime(end_date)
-        
-        # Create a complete date range
-        date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+
+        date_range = pd.date_range(start=self.hh._from, end=self.hh._to, freq='D')
         
         # For each date, count how many accounts were activated on or before that date
         cumulative_counts = []
@@ -165,15 +161,15 @@ class HouseholdPlots:
         fig, ax = plt.subplots(figsize=(12, 6))
         ax.plot(date_range, cumulative_counts, marker='o', linestyle='-', linewidth=1.5, markersize=3)
         
-        ax.set_ylabel('Number of Active Accounts')
-        ax.set_title(f'Active Accounts from {start_date.date()} to {end_date.date()}')
+        ax.set_ylabel('Aantal accounts')
+        ax.set_title(f'Actieve accounts van {self.hh._from} tot {self.hh._to}')
         ax.grid(True, alpha=0.3)
         
         # Rotate x-axis labels for better readability
         plt.xticks(rotation=45)
         plt.tight_layout()
         
-        return fig, ax
+        return fig
 
     def solar_per_neighbourhood_map(self) -> folium.Map:
         """Map labeled circles at neighbours ('wijk') illustrating the 
@@ -189,7 +185,7 @@ class HouseholdPlots:
         for wijk, group in df.groupby('wijk'):
             if group.empty:
                 continue
-            mapping[wijk] = (group['lat'].mean(), group['lon'].mean(), sum(group['has_solar']) / len(group) * 100)
+            mapping[wijk] = (group['lat'].mean(), group['lon'].mean(), sum(group['has_solar']) / len(group) * 100, len(group))
 
         MEAN_LAT = sum((k[0] for k in mapping.values())) / len(mapping)
         MEAN_LON = sum((k[1] for k in mapping.values())) / len(mapping)
@@ -202,10 +198,16 @@ class HouseholdPlots:
         # colormap.caption = 'Zonnepanelen per wijk (%)'
 
         for wijk, stats in mapping.items():
-            popup_text = f"""
-            <b>{wijk}</b><br>
-            {stats[2]:.1f}%
-            """
+            # print(f'{wijk}: {stats[3]}')
+
+            popup = folium.Popup(
+                f"""<div style="white-space: nowrap;">
+                    <b>{wijk}</b><br>
+                    {stats[2]:.1f}%<br>
+                    {stats[3]} huish.
+                </div>""",
+                max_width=300
+            )
             
             # Get color based on ratio
             color = colormap(stats[2])
@@ -213,7 +215,7 @@ class HouseholdPlots:
             folium.CircleMarker(
                 location=[stats[0], stats[1]],
                 radius=25,
-                popup=popup_text,
+                popup=popup,
                 color=color,
                 fill=True,
                 fillColor=color,
@@ -224,7 +226,8 @@ class HouseholdPlots:
             folium.Marker(
                 location=[stats[0], stats[1]],
                 icon=folium.DivIcon(html=f'''
-                    <div style="font-size: 14pt; color: black; 
+                    <div style="white-space: nowrap;
+                                font-size: 14pt; color: black; 
                                 font-weight: bold; text-align: center;
                                 text-shadow: 1px 1px 2px white, -1px -1px 2px white,
                                             1px -1px 2px white, -1px 1px 2px white;

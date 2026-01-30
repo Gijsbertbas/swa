@@ -8,6 +8,15 @@ import awswrangler as wr
 from analysis.enum import Colors
 from analysis.households import Households
 
+HOUSE_TYPE_MAPPING = {
+    'Detached house': 'detached', 
+    'Corner house': 'corner', 
+    'Semi-detached house': 'semi-detached', 
+    'rowhouse': 'terraced',
+    'Terraced house': 'terraced',
+    'Apartment': 'apartment'
+}
+
 
 class DailyUsage:
     """Helper class to collect and query the Dialy Usage dataset"""
@@ -16,7 +25,8 @@ class DailyUsage:
     _from: date
     _to: date
 
-    QUERY: str = """SELECT du.household_id, du.date, du.type, du.usage, hh.resident_count FROM usage.vw_daily_usage du 
+    QUERY: str = """SELECT du.household_id, du.date, du.type, du.usage, hh.resident_count, hh.house_type
+FROM usage.vw_daily_usage du 
 JOIN usage.vw_households hh ON hh.id = du.household_id 
 WHERE hh.account_status = 'Active' 
 AND hh.client_id = '{client_id}'
@@ -55,7 +65,7 @@ AND du.date >= '{_from}' AND du.date < '{_to}'"""
         """
         df_pivoted = self.df[self.df['date'] == datetime(day.year, day.month, day.day)].groupby(['household_id', 'type']).agg({
             'usage': 'sum',
-            'resident_count': 'min'
+            'resident_count': 'min',
         }).unstack(fill_value=0)
 
         # Flatten the MultiIndex columns and rename
@@ -65,17 +75,23 @@ AND du.date >= '{_from}' AND du.date < '{_to}'"""
         df_pivoted.rename(columns={'resident_count_electricity': 'resident_count'}, inplace=True)
         df_pivoted.columns = [c.removeprefix('usage_') for c in df_pivoted.columns]
 
+        # Add house type
+        df_pivoted = df_pivoted.merge(self.df[['household_id', 'house_type']].drop_duplicates(), on='household_id', how='left')
+        df_pivoted['house_type'] = df_pivoted['house_type'].replace(HOUSE_TYPE_MAPPING)
+
         df_pivoted['has_solar'] = df_pivoted['backfeed'] > 0
+        df_pivoted['elec_usage'] = df_pivoted['electricity'] + df_pivoted['backfeed'] * .3 / .7
 
         if debug:
             print(f'{len(df_pivoted)} records with data')
-        df_pivoted = df_pivoted[df_pivoted['electricity'] > 1]
+        df_pivoted = df_pivoted[df_pivoted['elec_usage'] > 1]
         if debug:
             print(f'{len(df_pivoted)} remaining with more than 1 kWh usage')
-        df_pivoted = df_pivoted[df_pivoted['resident_count'] > 1]
+
+        df_pivoted = df_pivoted[df_pivoted['house_type'].isin(('detached', 'semi-detached', 'corner'))]
         if debug:
-            print(f'{len(df_pivoted)} remaining with more than 1 resident')
-        return df_pivoted.sort_values(by='electricity').copy()
+            print(f'{len(df_pivoted)} remaining with house type (semi-)detached')
+        return df_pivoted.sort_values(by='elec_usage').copy()
 
     def average_electricity_consumption_on_date(self, day: date) -> float:
         """Calculate the average consumption on the given day
@@ -315,10 +331,10 @@ class DailyUsagePlots:
         fig, ax = plt.subplots(figsize=(12, 6))
         
         ax.plot(mean_none.index, mean_none.energy,
-            color=Colors.ELECTRICITY, linewidth=2, label='Geen App Gebruik', alpha=0.8)
+            color=Colors.GAS, linewidth=2, label='Geen App Gebruik', alpha=0.8)
         
         ax.plot(mean_monthly.index, mean_monthly.energy, 
-            color=Colors.GAS, linewidth=2, label='Maandelijks App Gebruik', alpha=0.8)
+            color=Colors.GREEN, linewidth=2, label='Maandelijks App Gebruik', alpha=0.8)
         
         ax.set_ylabel('Energyverbruik (kWh)', fontsize=11, fontweight='bold')
         ax.grid(True, alpha=0.3)
@@ -332,4 +348,8 @@ class DailyUsagePlots:
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
         
         plt.tight_layout()
+
+        # Calculate saving potential
+        merged = mean_none.merge(mean_monthly.reset_index()[['date','energy']], on='date')
+        print(f'Active app users use {(merged['energy_x'] - merged['energy_y']).mean():.02f} kWh per day less')
         return fig
