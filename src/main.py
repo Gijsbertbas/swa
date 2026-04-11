@@ -6,23 +6,37 @@ from src.extract.s3 import S3Extractor
 from transform.google import DailyUsageDataTransformer, P4HourData2025Transformer, P4QuarterData2024Transformer, P4QuarterData2025Transformer
 from util import DataType, ETLConfig
 
-from typing_extensions import Annotated
 
-  
-daily_usage_config = ETLConfig(DataType.DAILY_USAGE, 'daily_usage_data', transformer=DailyUsageDataTransformer)
-p4_quarter_2024 = ETLConfig(DataType.P4_QUARTER_2024, 'p4_hour_data_2024', P4QuarterData2024Transformer)
-p4_hour_2025 = ETLConfig(DataType.P4_HOUR_2025, 'p4_hour_data_2025', P4HourData2025Transformer)
-p4_quarter_2025 = ETLConfig(DataType.P4_QUARTER_2025, 'p4_hour_data__migration_2025', P4QuarterData2025Transformer)
-household_exceptions = ETLConfig(DataType.HOUSEHOLD_EXCEPTIONS, 'household_exceptions', eligible_steps="L")
+CONFIGS: dict[str, ETLConfig] = {
+    "daily_usage": ETLConfig(DataType.DAILY_USAGE, 'daily_usage_data', transformer=DailyUsageDataTransformer),
+    "p4_quarter_2024": ETLConfig(DataType.P4_QUARTER_2024, 'p4_hour_data_2024', P4QuarterData2024Transformer),
+    "p4_hour_2025": ETLConfig(DataType.P4_HOUR_2025, 'p4_hour_data_2025', P4HourData2025Transformer),
+    "p4_quarter_2025": ETLConfig(DataType.P4_QUARTER_2025, 'p4_hour_data__migration_2025', P4QuarterData2025Transformer),
+    "household_exceptions": ETLConfig(DataType.HOUSEHOLD_EXCEPTIONS, 'household_exceptions', eligible_steps="L"),
+}
 
 BUCKET = 'slimwonen-analysis-data'
 PROFILE = 'SA'
 
 
-config = household_exceptions
+def main(extract: bool = False, transform: bool = False, load: bool = False, config_name: str = typer.Option(None, "--config", "-c", help="ETL config to use")):
 
+    if config_name is None:
+        options = list(CONFIGS.keys())
+        for i, name in enumerate(options):
+            print(f"  [{i}] {name}")
+        choice = typer.prompt("Select config", default="0")
+        try:
+            config_name = options[int(choice)]
+        except (ValueError, IndexError):
+            typer.echo(f"Invalid choice: {choice}", err=True)
+            raise typer.Exit(1)
 
-def main(extract: bool = False, transform: bool = False, load: bool = False):
+    if config_name not in CONFIGS:
+        typer.echo(f"Unknown config '{config_name}'. Choose from: {', '.join(CONFIGS)}", err=True)
+        raise typer.Exit(1)
+
+    config = CONFIGS[config_name]
 
     if extract:
         if "E" not in config.eligible_steps:
