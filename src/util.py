@@ -8,8 +8,9 @@ from typing import Any
 class DataType(Enum):
     DAILY_USAGE = "daily_usage"
     P4_HOUR_2025 = "p4_hour_2025"
-    P4_QUARTER_2025 = "p4_quarter_2025"
     P4_QUARTER_2024 = "p4_quarter_2024"
+    P4_QUARTER_2025 = "p4_quarter_2025"
+    P4_QUARTER_2026 = "p4_quarter_2026"
     HOUSEHOLD_EXCEPTIONS = "household_exceptions"
 
 

@@ -12,6 +12,7 @@ CONFIGS: dict[str, ETLConfig] = {
     "p4_quarter_2024": ETLConfig(DataType.P4_QUARTER_2024, 'p4_hour_data_2024', P4QuarterData2024Transformer),
     "p4_hour_2025": ETLConfig(DataType.P4_HOUR_2025, 'p4_hour_data_2025', P4HourData2025Transformer),
     "p4_quarter_2025": ETLConfig(DataType.P4_QUARTER_2025, 'p4_hour_data__migration_2025', P4QuarterData2025Transformer),
+    "p4_quarter_2026": ETLConfig(DataType.P4_QUARTER_2026, 'p4_hour_data__migration_2026', P4QuarterData2025Transformer),
     "household_exceptions": ETLConfig(DataType.HOUSEHOLD_EXCEPTIONS, 'household_exceptions', eligible_steps="L"),
 }
 
